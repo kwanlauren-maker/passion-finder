@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Find Your Thing — High School Passion Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --cream: #FAF8F4; --ink: #1A1814; --ink-light: #6B6760; --ink-lighter: #A8A5A0;
+    --border: #E2DED8; --border-light: #EEEBE6; --card-bg: #F4F1EB; --white: #FFFFFF;
+    --radius: 4px; --radius-lg: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 640px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .topbar { border-bottom: 1px solid var(--border); padding: 1.25rem 0; margin-bottom: 3rem; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-title { font-family: 'Libre Baskerville', serif; font-size: 13px; letter-spacing: 0.04em; color: var(--ink-light); }
+  .topbar-mark { width: 24px; height: 24px; border: 1.5px solid var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .intro-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-lighter); margin-bottom: 1.25rem; }
+  .intro-headline { font-family: 'Libre Baskerville', serif; font-size: clamp(30px, 6vw, 44px); line-height: 1.2; margin-bottom: 1.5rem; }
+  .intro-headline em { font-style: italic; color: #2D5016; }
+  .intro-body { font-size: 15px; line-height: 1.75; color: var(--ink-light); max-width: 480px; margin-bottom: 2.5rem; border-left: 2px solid var(--border); padding-left: 1.25rem; }
+  .intro-rule { display: flex; gap: 2rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .intro-rule-item { font-size: 12px; color: var(--ink-lighter); display: flex; align-items: center; gap: 0.4rem; }
+  .intro-rule-item::before { content: ''; display: inline-block; width: 4px; height: 4px; background: var(--ink-lighter); border-radius: 50%; }
+  .name-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-lighter); margin-bottom: 0.5rem; }
+  .name-input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; font-size: 18px; font-family: 'Libre Baskerville', serif; color: var(--ink); background: var(--white); outline: none; transition: border-color 0.2s; }
+  .name-input:focus { border-color: var(--ink); }
+  .name-input::placeholder { color: var(--ink-lighter); font-style: italic; }
+  .prog-wrap { margin-bottom: 2.5rem; }
+  .prog-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; }
+  .prog-section { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-lighter); }
+  .prog-count { font-size: 12px; color: var(--ink-lighter); }
+  .prog-bg { height: 2px; background: var(--border); border-radius: 1px; }
+  .prog-fill { height: 2px; background: var(--ink); border-radius: 1px; transition: width 0.4s ease; }
+  .followup-tag { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8B4513; border: 1px solid currentColor; border-radius: 20px; padding: 3px 10px; margin-bottom: 1rem; }
+  .followup-tag::before { content: '↳'; font-size: 12px; }
+  .q-text { font-family: 'Libre Baskerville', serif; font-size: clamp(18px, 3.5vw, 22px); line-height: 1.5; color: var(--ink); margin-bottom: 0.4rem; }
+  .choose-hint { font-size: 12px; color: var(--ink-lighter); margin-bottom: 1.5rem; font-style: italic; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--ink); cursor: pointer; text-align: left; line-height: 1.5; transition: all 0.15s; }
+  .opt:hover { border-color: var(--ink-light); background: var(--card-bg); transform: translateX(3px); }
+  .opt.sel { border-color: var(--ink); background: var(--ink); color: var(--cream); transform: translateX(3px); }
+  .fill { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; font-size: 15px; font-family: 'DM Sans', sans-serif; color: var(--ink); background: var(--white); resize: none; outline: none; min-height: 110px; line-height: 1.65; transition: border-color 0.2s; }
+  .fill:focus { border-color: var(--ink); }
+  .fill::placeholder { color: var(--ink-lighter); font-style: italic; }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); }
+  .btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 10px 22px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--white); color: var(--ink-light); cursor: pointer; transition: all 0.15s; }
+  .btn:hover { border-color: var(--ink-light); color: var(--ink); }
+  .btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+  .btn.primary { background: var(--ink); color: var(--cream); border-color: var(--ink); padding: 10px 28px; }
+  .btn.primary:hover { background: #333; }
+  .btn.ghost { background: transparent; border-color: transparent; }
+  .result-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-lighter); margin-bottom: 1.5rem; }
+  .result-main { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.25rem; }
+  .result-header { background: var(--ink); color: var(--cream); padding: 2rem; }
+  .result-type-tag { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(250,248,244,0.5); display: inline-block; margin-bottom: 1rem; }
+  .result-headline { font-family: 'Libre Baskerville', serif; font-size: clamp(26px, 5vw, 36px); line-height: 1.2; }
+  .result-body-wrap { padding: 1.75rem 2rem; background: var(--white); }
+  .result-body { font-size: 14px; line-height: 1.8; color: var(--ink-light); }
+  .result-body p { margin-bottom: 0.85rem; }
+  .result-body p:last-child { margin-bottom: 0; }
+  .direction-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 2rem; background: var(--card-bg); margin-bottom: 1.25rem; }
+  .direction-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-lighter); margin-bottom: 0.75rem; }
+  .direction-body { font-size: 14px; line-height: 1.8; color: var(--ink); }
+  .direction-body p { margin-bottom: 0.75rem; }
+  .direction-body p:last-child { margin-bottom: 0; }
+  .loading-wrap { display: flex; align-items: center; gap: 10px; padding: 0.25rem 0; }
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span { width: 6px; height: 6px; background: var(--ink-lighter); border-radius: 50%; animation: dot 1.2s infinite; }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot { 0%,80%,100% { opacity: 0.2; } 40% { opacity: 1; } }
+  .answers-section { margin-top: 1.75rem; }
+  .answers-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-lighter); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-light); }
+  .answer-row { display: flex; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+  .answer-row:last-child { border-bottom: none; }
+  .answer-q { color: var(--ink-lighter); flex: 0 0 40%; line-height: 1.5; }
+  .answer-a { color: var(--ink); flex: 1; line-height: 1.5; font-style: italic; }
+  .result-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); }
+  .footer-note { margin-top: 3rem; font-size: 12px; color: var(--ink-lighter); text-align: center; line-height: 1.6; }
+  @media (max-width: 480px) {
+    .answer-row { flex-direction: column; gap: 0.25rem; }
+    .answer-q { flex: none; }
+    .result-header, .result-body-wrap, .direction-card { padding: 1.25rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <span class="topbar-title">Passion Finder · 8th Grade</span>
+    <div class="topbar-mark">✦</div>
+  </div>
+
+  <div class="screen active" id="s-intro">
+    <p class="intro-eyebrow">For students entering high school</p>
+    <h1 class="intro-headline">Find your <em>thing</em><br>before high school starts.</h1>
+    <p class="intro-body">This isn't a test. There are no right answers. It's just a way to figure out what actually makes you tick — so your high school years can be about something you genuinely care about.</p>
+    <div class="intro-rule">
+      <span class="intro-rule-item">About 5 minutes</span>
+      <span class="intro-rule-item">No wrong answers</span>
+      <span class="intro-rule-item">Results you can share</span>
+    </div>
+    <div style="margin-bottom:2rem">
+      <div class="name-label">What's your name?</div>
+      <input class="name-input" id="name-field" type="text" placeholder="First name is fine…" maxlength="40"/>
+    </div>
+    <button class="btn primary" onclick="startQuiz()" style="width:100%;padding:14px;font-size:15px">Start the quiz →</button>
+    <p class="footer-note">Your answers stay in your browser. Nothing is stored or shared without you.</p>
+  </div>
+
+  <div class="screen" id="s-quiz">
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span class="prog-section" id="sec-label"></span>
+        <span class="prog-count" id="q-count"></span>
+      </div>
+      <div class="prog-bg"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    </div>
+    <div id="followup-tag" style="display:none"><span class="followup-tag">Follow-up</span></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choose-hint" id="choose-hint"></div>
+    <div id="q-body"></div>
+    <div class="nav">
+      <button class="btn ghost" id="back-btn" onclick="goBack()">← Back</button>
+      <button class="btn primary" id="next-btn" onclick="goNext()">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="s-result">
+    <div id="result-content"></div>
+    <p class="footer-note">Share your results with a counselor, parent, or friend to start the conversation.</p>
+  </div>
+</div>
+
+<script>
+var uname='',answers={},current=0,sequence=[];
+
+var baseQuestions=[
+  {id:'q1',section:'How you spend your time',
+   text:'It\'s Saturday. No plans, no homework, no one telling you what to do. What do you actually end up doing?',
+   type:'single',
+   opts:['Making or building something — art, music, code, food, whatever',
+         'Spending time with people I actually like, with nothing on the agenda',
+         'Going outside, moving, playing a sport or exploring',
+         'Reading, watching, or learning about something I\'m obsessed with',
+         'Gaming, watching shows, or chilling by myself',
+         'Something else entirely'],
+   followup:{triggerIndex:5,question:{id:'q1b',section:'How you spend your time',isFollowup:true,
+     text:'You said something else — what do you actually end up doing?',
+     type:'fill',placeholder:'Be as specific as you want. This is the interesting part.'}}},
+  {id:'q2',section:'How you spend your time',
+   text:'Finish this sentence: "I lose track of time when I\'m..."',
+   type:'fill',placeholder:'Just write the first thing that comes to mind. No filter needed.'},
+  {id:'q3',section:'How you think',
+   text:'When you\'re working on something hard, which of these sounds most like you?',
+   type:'single',
+   opts:['I like figuring out why things work the way they do',
+         'I like coming up with new ideas, even wild ones',
+         'I like doing things that actually help or matter to someone',
+         'I like getting the details exactly right',
+         'I like trying stuff and seeing what happens',
+         'I like telling stories or explaining things to others',
+         'I like finishing things cleanly so I can actually enjoy being done']},
+  {id:'q4',section:'How you think',
+   text:'Your teacher gives you a free assignment — you can do it on anything you want. What topic do you choose?',
+   type:'fill',placeholder:'Doesn\'t have to be "smart." Pick what you\'d actually want to research.'},
+  {id:'q5',section:'What energizes you',
+   text:'Which of these sounds like the best kind of day?',
+   type:'single',
+   opts:['Performing or showing something I worked on to other people',
+         'Solving a really tricky problem that took forever',
+         'Helping a friend figure something out',
+         'Being outside and physically pushing myself',
+         'Creating something from scratch that didn\'t exist before',
+         'Learning something that completely surprises me',
+         'Being somewhere I love with people I care about, with nowhere to be'],
+   followup:{alwaysAsk:true,question:{id:'q5b',section:'What energizes you',isFollowup:true,
+     text:'What made that kind of day feel so good? What specifically about it energizes you?',
+     type:'fill',placeholder:'Think about the last time you had a day like that. What made it work?'}}},
+  {id:'q6',section:'What energizes you',
+   text:'What\'s something you do — or have done — that you\'re actually proud of, even if no one gave you a grade for it?',
+   type:'fill',placeholder:'Could be anything. Big, small, weird, whatever.'},
+  {id:'q7',section:'What drains you',
+   text:'Which of these feels like the biggest waste of your time?',
+   type:'single',
+   opts:['Sitting still and just listening for a long time',
+         'Working alone with no one to talk to',
+         'Doing the same thing over and over',
+         'Having to follow exact instructions with no room to improvise',
+         'Reading or writing a lot',
+         'Being the center of attention'],
+   followup:{alwaysAsk:true,question:{id:'q7b',section:'What drains you',isFollowup:true,
+     text:'What is it about that that drains you — is it the activity itself, or the feeling it gives you?',
+     type:'fill',placeholder:'There\'s no wrong answer here. Just curious about the why.'}}},
+  {id:'q8',section:'How you see the world',
+   text:'If you could fix one thing about the world — and you actually had the power to do it — what would it be?',
+   type:'fill',placeholder:'Don\'t overthink it. Go with your gut.'},
+  {id:'q9',section:'How you see the world',
+   text:'Which of these would feel most like success to you when you\'re older?',
+   type:'single',
+   opts:['I created something people know and remember',
+         'I built something — a company, a project, a community',
+         'I helped people in a real, direct way',
+         'I figured out something no one had figured out before',
+         'I got really, really good at one specific thing',
+         'I told stories or made art that made people feel something',
+         'I have people I love, work I don\'t hate, and a life that feels like mine'],
+   followup:{triggerIndex:6,question:{id:'q9b',section:'How you see the world',isFollowup:true,
+     text:'What kind of work do you think could feel meaningful without taking over your life?',
+     type:'fill',placeholder:'It could be anything — a job, a hobby, a way of spending your days.'}}},
+  {id:'q10',section:'How you see the world',
+   text:'Finish this sentence: "Most people don\'t know that I\'m really good at..."',
+   type:'fill',placeholder:'The thing you\'re secretly proud of but don\'t always talk about.'},
+  {id:'q11',section:'Your instincts',
+   text:'When you\'re in a group working on something, which role do you naturally end up in?',
+   type:'single',
+   opts:['The one with all the ideas',
+         'The one who actually makes it happen',
+         'The one keeping everyone on track',
+         'The one making sure everyone\'s good',
+         'The one who steps up to present it',
+         'The one who makes it look good',
+         'The one who keeps things from getting too stressful']},
+  {id:'q12',section:'Your instincts',
+   text:'What\'s a topic you could talk about for way too long — the one where you have to stop yourself?',
+   type:'fill',placeholder:'The thing you go on about and your friends have to tell you to stop.'},
+  {id:'q13',section:'The big picture',
+   text:'Which of these feels most true about how you want to spend your high school years?',
+   type:'single',
+   opts:['Going deep on one thing I really care about',
+         'Trying a lot of different things to see what sticks',
+         'Building something real — a project, a club, something that exists',
+         'Getting really good at a skill that takes serious practice',
+         'Making a difference in my school or community',
+         'Figuring out who I actually am and what I stand for',
+         'Having experiences I\'ll actually remember and people I\'ll stay close to'],
+   followup:{triggerIndex:1,question:{id:'q13b',section:'The big picture',isFollowup:true,
+     text:'If you did try a lot of different things — what\'s one area you\'d want to make sure you explored?',
+     type:'fill',placeholder:'Even a vague answer is useful here. A subject, a type of activity, a feeling.'}}}
+];
+
+var profiles=[
+  {id:'grounded',headline:'The Grounded One',type:'Loyal · Present · Self-aware',
+   trigger:function(a){return a.q9===6||(a.q1===1&&a.q5===6&&a.q13===6)||(a.q9===6&&a.q13===6)},
+   body:['NAME knows who they are. Not in a loud way — in a quiet, settled way that most people spend years trying to find. You care about the people in your life more than you care about being impressive, and you\'re honest enough with yourself to know that.',
+         'You\'re not unambitious. You just measure a good life differently — by the quality of your relationships, the realness of your experiences, and whether your days actually feel like yours.',
+         'That self-knowledge is rare at 14. It\'s a real strength.']},
+  {id:'creative',headline:'The Creative Maker',type:'Builder · Storyteller · Originator',
+   trigger:function(a){return(a.q1===0||a.q5===4||a.q9===0||a.q9===5)&&(a.q3===1||a.q11===0)},
+   body:['NAME is someone who makes things. Not because anyone asked, but because the idea was there and it needed to exist. Whether it\'s music, art, writing, code, or something harder to name — the best version of your high school years involves building a body of work.',
+         'You\'re at your best when you have creative control and room to experiment. You probably have strong opinions about things most people don\'t notice.',
+         'You don\'t need to know exactly where it leads yet. You just need to keep making.']},
+  {id:'thinker',headline:'The Deep Thinker',type:'Analyst · Problem Solver · Investigator',
+   trigger:function(a){return(a.q3===0||a.q3===3||a.q9===3)&&(a.q1===3||a.q5===1||a.q5===5)},
+   body:['NAME is the person who needs to understand how things actually work — not just what they are. You ask why when everyone else has moved on. You notice patterns other people miss.',
+         'You\'re energized by hard problems and drained by surface-level answers. You probably have a subject where you go way deeper than class requires.',
+         'That depth is your superpower.']},
+  {id:'connector',headline:'The Connector',type:'Community Builder · Helper · Changemaker',
+   trigger:function(a){return(a.q3===2||a.q9===2||a.q5===2)&&(a.q11===3||a.q11===6)},
+   body:['NAME is someone who notices people. You\'re tuned into what others need, and you actually do something about it. That\'s rarer than it sounds.',
+         'You\'re energized by working with people, not just for them. You probably care deeply about fairness, community, or making your school or neighborhood better in some concrete way.',
+         'The best projects for you are ones where real people benefit — not just ones that look good on paper.']},
+  {id:'performer',headline:'The Performer',type:'Athlete · Artist · Competitor',
+   trigger:function(a){return(a.q1===2||a.q5===3||a.q3===4)&&(a.q13===0||a.q13===3)},
+   body:['NAME is someone who shows up and performs. Whether that\'s on a field, a stage, a court, or somewhere else — you do your best work when something is on the line.',
+         'You\'re wired for practice, repetition, and the feeling of getting better at something that actually matters to you. You\'re probably more competitive than you let on.',
+         'The discipline you build around your craft will carry you further than you expect.']},
+  {id:'builder',headline:'The Builder',type:'Entrepreneur · Founder · Doer',
+   trigger:function(a){return(a.q3===1||a.q9===1||a.q13===2)&&(a.q11===0||a.q11===1)},
+   body:['NAME is someone who sees something that doesn\'t exist yet and wants to make it real. You\'re not waiting for permission. You\'re probably already running things — a group chat, a side project, a scheme that may or may not have worked out.',
+         'You\'re at your best when you have ownership and autonomy. You don\'t need a roadmap as long as you have a destination.',
+         'High school is actually a great time to build something — the stakes are low enough to experiment and high enough to learn from.']},
+  {id:'explorer',headline:'The Explorer',type:'Curious · Adaptable · Open',
+   trigger:function(a){return true},
+   body:['NAME hasn\'t found the one thing yet — and that\'s not a problem. You\'re genuinely curious about a lot of different things, which means you\'re still open.',
+         'You\'re probably good at picking things up quickly, adapting to new situations, and connecting ideas across areas other people keep separate. That\'s a real skill.',
+         'The goal for high school isn\'t to lock things in. It\'s to go deep enough on a few things that you find out which one actually grabs you.']}
+];
+
+function getCourseHint(profileId,a){
+  var allText=[a.q2,a.q4,a.q6,a.q8,a.q10,a.q12,a.q1b,a.q5b].filter(Boolean).join(' ').toLowerCase();
+  if(/science|biology|chemistry|physics|environment|climate|space|engineer|tech|code|math|data/.test(allText)||profileId==='thinker')
+    return 'Courses like Biology, Chemistry, Physics, or Precalculus connect directly to the kinds of questions this student seems drawn to. AP versions are worth exploring if available.';
+  if(/art|music|draw|paint|write|film|photo|design|creat|story|danc|theater/.test(allText)||profileId==='creative')
+    return 'Studio art, music, drama, creative writing, or film electives are natural fits. AP Art or AP English Language could also be worth exploring.';
+  if(/people|community|society|politics|history|justice|inequal|help|world|culture/.test(allText)||profileId==='connector')
+    return 'Classes like AP Government, Economics, World History, Sociology, or Psychology often resonate with students who care about how the world works and why people do what they do.';
+  if(/business|money|start|entrepren|sell|market|product|idea/.test(allText)||profileId==='builder')
+    return 'Business, economics, or entrepreneurship electives connect directly to the kind of thinking this student seems to enjoy.';
+  if(/language|speak|communicat|essay|journal|blog|podcast|writ/.test(allText))
+    return 'Strong writing and communication open almost every door. AP English Language or a creative writing elective is worth adding if interests point that way.';
+  return 'Encourage a mix of subjects they\'re genuinely curious about — a foreign language, an arts elective, or a challenging science class can all open unexpected doors.';
+}
+
+function buildSequence(){
+  sequence=[];
+  baseQuestions.forEach(function(q){
+    sequence.push(q);
+    if(q.followup&&q.followup.alwaysAsk) sequence.push(q.followup.question);
+  });
+}
+
+function startQuiz(){
+  uname=document.getElementById('name-field').value.trim()||'You';
+  answers={};current=0;buildSequence();
+  show('s-quiz');render();
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function render(){
+  var q=sequence[current];
+  document.getElementById('prog').style.width=Math.round((current/sequence.length)*100)+'%';
+  document.getElementById('sec-label').textContent=q.section.toUpperCase();
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('q-count').textContent=(current+1)+' / '+sequence.length;
+  document.getElementById('back-btn').disabled=current===0;
+  document.getElementById('followup-tag').style.display=q.isFollowup?'block':'none';
+  document.getElementById('choose-hint').textContent=q.type==='single'?'Choose one that fits best.':'';
+  var body=document.getElementById('q-body');body.innerHTML='';
+  if(q.type==='single'){
+    var div=document.createElement('div');div.className='opts';
+    q.opts.forEach(function(o,i){
+      var btn=document.createElement('button');
+      btn.className='opt'+(answers[q.id]===i?' sel':'');
+      btn.textContent=o;
+      btn.onclick=function(){
+        answers[q.id]=i;
+        document.querySelectorAll('#q-body .opt').forEach(function(b){b.classList.remove('sel')});
+        btn.classList.add('sel');
+        document.getElementById('next-btn').disabled=false;
+      };
+      div.appendChild(btn);
+    });
+    body.appendChild(div);
+    document.getElementById('next-btn').disabled=answers[q.id]===undefined;
+  } else {
+    var ta=document.createElement('textarea');
+    ta.className='fill';ta.placeholder=q.placeholder;ta.value=answers[q.id]||'';
+    ta.oninput=function(){answers[q.id]=ta.value.trim();document.getElementById('next-btn').disabled=ta.value.trim().length<2;};
+    body.appendChild(ta);
+    document.getElementById('next-btn').disabled=!answers[q.id]||answers[q.id].length<2;
+  }
+  document.getElementById('next-btn').textContent=current===sequence.length-1?'See my results →':'Next →';
+}
+
+function goNext(){
+  var q=sequence[current];
+  if(q.type==='single'&&q.followup&&!q.followup.alwaysAsk&&q.followup.triggerIndex!==null){
+    var triggered=answers[q.id]===q.followup.triggerIndex;
+    var nextQ=sequence[current+1];
+    var alreadyHas=nextQ&&nextQ.id===q.followup.question.id;
+    if(triggered&&!alreadyHas) sequence.splice(current+1,0,q.followup.question);
+    else if(!triggered&&alreadyHas) sequence.splice(current+1,1);
+  }
+  if(current<sequence.length-1){current++;render();}
+  else{buildResult();}
+}
+
+function goBack(){if(current>0){current--;render();}}
+
+async function buildResult(){
+  show('s-result');
+  var a=answers;
+  var profile=profiles.find(function(p){return p.trigger(a)})||profiles[profiles.length-1];
+  var bodyHtml=profile.body.map(function(p){return '<p>'+p.replace(/NAME/g,uname)+'</p>';}).join('');
+  var fills=[
+    ['I lose track of time when…',a.q2||'—'],
+    ['Free assignment topic:',a.q4||'—'],
+    ['Something I\'m proud of:',a.q6||'—'],
+    ['I\'d fix this about the world:',a.q8||'—'],
+    ['People don\'t know I\'m good at:',a.q10||'—'],
+    ['I could talk about this forever:',a.q12||'—']
+  ];
+  if(a.q1b) fills.unshift(['That "something else" on Saturday:',a.q1b]);
+  if(a.q5b) fills.push(['What makes a great day:',a.q5b]);
+  if(a.q7b) fills.push(['Why that drains me:',a.q7b]);
+  if(a.q9b) fills.push(['Work that feels meaningful:',a.q9b]);
+  if(a.q13b) fills.push(['Area I\'d want to explore:',a.q13b]);
+  var answersHtml=fills.map(function(f){return '<div class="answer-row"><div class="answer-q">'+f[0]+'</div><div class="answer-a">'+f[1]+'</div></div>';}).join('');
+
+  document.getElementById('result-content').innerHTML=
+    '<p class="result-eyebrow">'+uname+'\'s Passion Profile</p>'+
+    '<div class="result-main">'+
+      '<div class="result-header"><div class="result-type-tag">'+profile.type+'</div><div class="result-headline">'+profile.headline+'</div></div>'+
+      '<div class="result-body-wrap"><div class="result-body">'+bodyHtml+'</div></div>'+
+    '</div>'+
+    '<div class="direction-card">'+
+      '<div class="direction-label">Things to Consider in High School</div>'+
+      '<div class="direction-body" id="direction-body">'+
+        '<div class="loading-wrap"><div class="loading-dots"><span></span><span></span><span></span></div>'+
+        '<span style="font-size:13px;color:#A8A5A0">Personalizing your suggestions…</span></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="answers-section"><div class="answers-label">In '+uname+'\'s own words</div>'+answersHtml+'</div>'+
+    '<div class="result-actions">'+
+      '<button class="btn primary" onclick="window.print()">Print / Save as PDF</button>'+
+      '<button class="btn" onclick="restart()">Start over</button>'+
+    '</div>';
+
+  var ctx='';
+  if(a.q1b) ctx+='On a free Saturday they actually do: '+a.q1b+'. ';
+  if(a.q2) ctx+='Loses track of time when: '+a.q2+'. ';
+  if(a.q4) ctx+='Would research for fun: '+a.q4+'. ';
+  if(a.q5b) ctx+='What makes a great day great: '+a.q5b+'. ';
+  if(a.q6) ctx+='Proud of (no grade required): '+a.q6+'. ';
+  if(a.q7b) ctx+='Why their draining thing drains them: '+a.q7b+'. ';
+  if(a.q8) ctx+='Would fix about the world: '+a.q8+'. ';
+  if(a.q9b) ctx+='Meaningful work to them: '+a.q9b+'. ';
+  if(a.q10) ctx+='Hidden skill: '+a.q10+'. ';
+  if(a.q12) ctx+='Could talk about forever: '+a.q12+'. ';
+  if(a.q13b) ctx+='Area they\'d want to explore: '+a.q13b+'. ';
+
+  var prompt=
+    'You are a warm, practical advisor writing personalized suggestions for an 8th grader about to start high school. Your job is to help them think about activities, classes, and projects worth exploring — based on who they actually are.\n\n'+
+    'Student name: '+uname+'\n'+
+    'Profile: '+profile.headline+' ('+profile.type+')\n\n'+
+    'What they said about themselves:\n'+(ctx||'No open-text answers provided — base suggestions on their profile type.')+'\n\n'+
+    'Course guidance to weave in naturally where relevant: '+getCourseHint(profile.id,a)+'\n\n'+
+    'Write 3-4 short, specific suggestions covering a mix of: extracurricular activities or clubs, volunteer opportunities, small projects or business ideas, and 1-2 classes that connect naturally to their interests. '+
+    'Ground each suggestion in something they actually said. Be 2-3 sentences per suggestion. '+
+    'RULES: Never mention college, admissions, essays, or resumes. No motivational-poster language. Practical, warm, specific. '+
+    'Format as plain paragraphs with blank lines between them. No bullets, headers, or numbers. Start by addressing '+uname+' directly.';
+
+  try {
+    const response = await fetch('/.netlify/functions/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt })
+    });
+    const data = await response.json();
+    const text = data.content && data.content[0] && data.content[0].text ? data.content[0].text : '';
+    const html = text.trim().split(/\n\n+/).filter(p => p.trim()).map(p => '<p>'+p.trim()+'</p>').join('');
+    document.getElementById('direction-body').innerHTML = html || '<p style="color:#A8A5A0;font-style:italic">Share your profile with a trusted adult to talk through next steps.</p>';
+  } catch(e) {
+    document.getElementById('direction-body').innerHTML = '<p style="color:#A8A5A0;font-style:italic">Couldn\'t load personalized suggestions right now. Share your profile with a counselor or trusted adult to talk through next steps.</p>';
+  }
+}
+
+function restart(){
+  answers={};current=0;uname='';sequence=[];
+  document.getElementById('name-field').value='';
+  show('s-intro');
+}
+</script>
+</body>
+</html>
